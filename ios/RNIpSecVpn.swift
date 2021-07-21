@@ -144,36 +144,42 @@ class RNIpSecVpn: RCTEventEmitter {
 
                 vpnManager.isEnabled = true
                 
-                let defaultErr = NSError()
+//                let defaultErr = NSError()
 
                 vpnManager.saveToPreferences(completionHandler: { (error) -> Void in
                     if error != nil {
                         print("VPN Preferences error: 2")
-                        rejecter("VPN_ERR", "VPN Preferences error: 2", defaultErr)
+//                        rejecter("VPN_ERR", "VPN Preferences error: 2", defaultErr)
+                        self.sendEvent(withName: "stateChanged", body: [ "state" : 5])
+
                     } else {
                         vpnManager.loadFromPreferences(completionHandler: { error in
 
                             if error != nil {
                                 print("VPN Preferences error: 2")
-                                rejecter("VPN_ERR", "VPN Preferences error: 2", defaultErr)
+//                                rejecter("VPN_ERR", "VPN Preferences error: 2", defaultErr)
                             } else {
                                 var startError: NSError?
 
                                 do {
-                                    try vpnManager.connection.startVPNTunnel()
+                                    if name != "" {
+                                        try vpnManager.connection.startVPNTunnel()
+                                    }else if vpnManager.connection.status != .disconnected{
+                                        self.sendEvent(withName: "stateChanged", body: [ "state" : checkNEStatus(status: vpnManager.connection.status) ])
+                                    }
                                 } catch let error as NSError {
                                     startError = error
                                     print(startError ?? "VPN Manager cannot start tunnel")
-                                    rejecter("VPN_ERR", "VPN Manager cannot start tunnel", startError)
+//                                    rejecter("VPN_ERR", "VPN Manager cannot start tunnel", startError)
                                 } catch {
                                     print("Fatal Error")
-                                    rejecter("VPN_ERR", "Fatal Error", NSError(domain: "", code: 200, userInfo: nil))
-                                    fatalError()
+//                                    rejecter("VPN_ERR", "Fatal Error", NSError(domain: "", code: 200, userInfo: nil))
+//                                    fatalError()
                                 }
                                 if startError != nil {
                                     print("VPN Preferences error: 3")
                                     print(startError ?? "Start Error")
-                                    rejecter("VPN_ERR", "VPN Preferences error: 3", startError)
+//                                    rejecter("VPN_ERR", "VPN Preferences error: 3", startError)
                                 } else {
                                     print("VPN started successfully..")
                                     findEventsWithResolver(nil)
@@ -202,7 +208,7 @@ class RNIpSecVpn: RCTEventEmitter {
             findEventsWithResolver(status)
         } else {
             rejecter("VPN_ERR", "Unknown state", NSError())
-            fatalError()
+//            fatalError()
         }
     }
     
